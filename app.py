@@ -16,58 +16,86 @@ def homepage():
 
 @app.route('/froyo')
 def choose_froyo():
-    """Shows a form to collect the user's Fro-Yo order."""
-    pass
+    return render_template('froyo_form.html')
+    
 
 @app.route('/froyo_results')
-def show_froyo_results():
-    """Shows the user what they ordered from the previous page."""
-    pass
+def froyo_results():
+    context = {
+    'users_flavor': request.args.get('flavor'),
+    'users_toppings': request.args.get('toppings')
+    }
+    return render_template('froyo_results.html', **context)
 
 @app.route('/favorites')
 def favorites():
     """Shows the user a form to choose their favorite color, animal, and city."""
-    pass
+    return """
+    <form action="/favorites_results" method="GET">
+        What is your favorite color?<br/>
+        <input type="text" name="color"><br/>
+        What is your favorite animal?<br/>
+        <input type="text" name="animal"><br/>
+        What is your favorite city?<br/>
+        <input type="text" name="city"><br/>
+        <input type="submit" value="Submit!">
+    </form>
+    """
 
 @app.route('/favorites_results')
 def favorites_results():
+    users_favorite_color = request.args.get('color')
+    users_favorite_animal = request.args.get('animal')
+    users_favorite_city = request.args.get('city')
     """Shows the user a nice message using their form results."""
-    pass
+    return f"Wow, I didn't know {users_favorite_color} {users_favorite_animal}s lived in {users_favorite_city}!"
 
 @app.route('/secret_message')
 def secret_message():
     """Shows the user a form to collect a secret message. Sends the result via
     the POST method to keep it a secret!"""
-    pass
-
-@app.route('/message_results', methods=['POST'])
-def message_results():
-    """Shows the user their message, with the letters in sorted order."""
-    pass
-
-@app.route('/calculator')
-def calculator():
-    """Shows the user a form to enter 2 numbers and an operation."""
     return """
-    <form action="/calculator_results" method="GET">
-        Please enter 2 numbers and select an operator.<br/><br/>
-        <input type="number" name="operand1">
-        <select name="operation">
-            <option value="add">+</option>
-            <option value="subtract">-</option>
-            <option value="multiply">*</option>
-            <option value="divide">/</option>
-        </select>
-        <input type="number" name="operand2">
+    <form action="/message_results" method="POST">
+        Please enter a secret message:<br/>
+        <input type="text" name="message"><br/>
         <input type="submit" value="Submit!">
     </form>
     """
 
+@app.route('/message_results', methods=['POST'])
+def message_results():
+    """Shows the user their message, with the letters in sorted order."""
+    users_secret_message = sort_letters(request.form.get('message'))
+    return f"""Here's your secret message! <br/> {users_secret_message}"""
+
+@app.route('/calculator')
+def calculator():
+    """Shows the user a form to enter 2 numbers and an operation."""
+    return render_template('calculator_form.html')
+
 @app.route('/calculator_results')
 def calculator_results():
     """Shows the user the result of their calculation."""
-    pass
-
+    op = request.args.get('operation')
+    users_num1 = request.args.get('operand1')
+    users_num2 = request.args.get('operand2')
+    if op == "add":
+        answer = int(users_num1) + int(users_num2)
+    elif op == "subtract":
+        answer = int(users_num1) - int(users_num2)
+    elif op == "multiply":
+        answer = int(users_num1) * int(users_num2)
+    elif op == "divide":
+        answer = int(users_num1) / int(users_num2)
+    context = {
+    'num1': users_num1,
+    'users_operation': op,
+    'num2': users_num2,
+    'answer': answer
+    }
+    return render_template('calculator_results.html', **context)
+    
+    
 
 # List of compliments to be used in the `compliments_results` route (feel free 
 # to add your own!) 
@@ -114,4 +142,4 @@ def compliments_results():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
